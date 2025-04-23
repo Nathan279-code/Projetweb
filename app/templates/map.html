@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte avec Leaflet</title>
+    
+    <!-- Liens CDN pour tester si Leaflet charge bien -->
+    <link rel="stylesheet" href="static/leaflet/leaflet.css">
+    <script src="static/leaflet/leaflet.js"></script>
+
+
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Ma localisation avec Leaflet</h2>
+    <div id="map"></div>
+
+    <script>
+        // Initialisation de la carte
+        var map = L.map('map').setView([0, 0], 13); // Centrée par défaut sur [0,0]
+
+        // Chargement des tuiles OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Fonction pour obtenir la localisation de l'utilisateur
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var lat = position.coords.latitude;
+                    var lon = position.coords.longitude;
+                    var userLocation = [lat, lon];
+
+                    // Centrer la carte sur la position de l'utilisateur
+                    map.setView(userLocation, 13);
+
+                    // Ajouter un marqueur sur la position
+                    L.marker(userLocation).addTo(map)
+                        .bindPopup("Vous êtes ici !")
+                        .openPopup();
+                }, function(error) {
+                    alert("Impossible de récupérer la localisation : " + error.message);
+                });
+            } else {
+                alert("La géolocalisation n'est pas supportée par votre navigateur.");
+            }
+        }
+
+        // Appel de la fonction de localisation
+        getLocation();
+    </script>
+
+</body>
+</html>
