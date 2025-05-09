@@ -2,61 +2,68 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <title>Carte des établissements</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carte avec Leaflet</title>
-    
-    <!-- Liens CDN pour tester si Leaflet charge bien -->
-    <link rel="stylesheet" href="static/leaflet/leaflet.css">
-    <script src="static/leaflet/leaflet.js"></script>
 
-
-    <style>
-        #map {
-            height: 500px;
-            width: 100%;
-        }
-    </style>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
-    <h2>Ma localisation avec Leaflet</h2>
-    <div id="map"></div>
+<div id="map"></div>
 
-    <script>
-        // Initialisation de la carte
-        var map = L.map('map').setView([0, 0], 13); // Centrée par défaut sur [0,0]
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-        // Chargement des tuiles OpenStreetMap
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
+<script>
+    const map = L.map('map'); 
 
-        // Fonction pour obtenir la localisation de l'utilisateur
-        function getLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    var lat = position.coords.latitude;
-                    var lon = position.coords.longitude;
-                    var userLocation = [lat, lon];
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
 
-                    // Centrer la carte sur la position de l'utilisateur
-                    map.setView(userLocation, 13);
+    /*etablissements.forEach(etablissement => {
+        L.marker([etablissement.latitude, etablissement.longitude])
+            .addTo(map)
+            .bindPopup(etablissement.nom);
+    });*/
 
-                    // Ajouter un marqueur sur la position
-                    L.marker(userLocation).addTo(map)
-                        .bindPopup("Vous êtes ici !")
-                        .openPopup();
-                }, function(error) {
-                    alert("Impossible de récupérer la localisation : " + error.message);
-                });
-            } else {
-                alert("La géolocalisation n'est pas supportée par votre navigateur.");
-            }
-        }
+    // Géolocalisation utilisateur avec haute précision
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            const accuracy = position.coords.accuracy;
 
-        // Appel de la fonction de localisation
-        getLocation();
-    </script>
+            // Centrer la carte
+            map.setView([lat, lon], 15);
+
+            // Marqueur
+            L.marker([lat, lon])
+                .addTo(map)
+                .bindPopup("Vous êtes ici")
+                .openPopup();
+
+            // Cercle de précision
+            L.circle([lat, lon], {
+                radius: accuracy,
+                color: 'blue',
+                fillColor: '#aaddff',
+                fillOpacity: 0.3
+            }).addTo(map);
+
+        }, () => {
+            alert("Impossible de récupérer votre position.");
+        }, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+        });
+    } else {
+        alert("La géolocalisation n'est pas supportée par votre navigateur.");
+    }
+</script>
 
 </body>
 </html>
